@@ -82,11 +82,16 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Get Kubeconfig File
+        id: getconfig
         run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER }}
 
       - name: Print Config File
         run: cat ~/.kube/config
 
+      - name: Install Ingress Controler
+        if: steps.getconfig == 'success'
+        run: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/aws/deploy.yaml
+        
       - name: Deploy Helm
         uses: bitovi/github-actions-deploy-eks-helm@v1.2.9
         with:
